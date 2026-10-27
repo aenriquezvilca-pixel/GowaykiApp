@@ -154,7 +154,7 @@ fun GowaykiNav(
                 RutaFormScreen(
                     existente = state.todas.find { it.id == id },
                     guardando = state.guardando,
-                    errorServidor = state.error,
+                    errorServidor = state.errorGuardado,
                     onGuardar = { ruta -> vm.guardar(ruta) { nav.popBackStack() } },
                     onCancelar = {
                         vm.limpiarError()
@@ -201,7 +201,7 @@ fun GowaykiNav(
                     perfil = perfil,
                     totalRutas = state.todas.size,
                     eliminando = state.guardando,
-                    error = state.error,
+                    error = state.errorGuardado,
                     onConfirmar = {
                         vm.eliminarTodas {
                             perfilVm.reiniciar()

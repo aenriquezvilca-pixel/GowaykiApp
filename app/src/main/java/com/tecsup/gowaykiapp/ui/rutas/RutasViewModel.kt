@@ -16,7 +16,8 @@ data class RutasUiState(
     val todas: List<Ruta> = emptyList(), // sin filtro, se usa para estadísticas
     val rutas: List<Ruta> = emptyList(), // las que se muestran según el filtro
     val filtro: String? = null, // null = todas
-    val error: String? = null
+    val error: String? = null, // error al cargar la lista
+    val errorGuardado: String? = null // error al guardar o eliminar (formulario y eliminar cuenta)
 )
 
 class RutasViewModel(
@@ -57,7 +58,7 @@ class RutasViewModel(
 
     fun guardar(ruta: Ruta, onExito: () -> Unit) {
         viewModelScope.launch {
-            _state.update { it.copy(guardando = true, error = null) }
+            _state.update { it.copy(guardando = true, errorGuardado = null) }
             val id = ruta.id
             val resultado = if (id == null) repo.crear(ruta) else repo.modificar(id, ruta)
             resultado.fold(
@@ -67,7 +68,7 @@ class RutasViewModel(
                     onExito()
                 },
                 onFailure = { e ->
-                    _state.update { it.copy(guardando = false, error = e.message) }
+                    _state.update { it.copy(guardando = false, errorGuardado = e.message) }
                 }
             )
         }
@@ -85,7 +86,7 @@ class RutasViewModel(
     /** Borra en la API todas las rutas (se usa al eliminar la cuenta). */
     fun eliminarTodas(onListo: () -> Unit) {
         viewModelScope.launch {
-            _state.update { it.copy(guardando = true, error = null) }
+            _state.update { it.copy(guardando = true, errorGuardado = null) }
             var fallo: String? = null
             for (ruta in _state.value.todas) {
                 val id = ruta.id ?: continue
@@ -93,11 +94,11 @@ class RutasViewModel(
             }
             _state.update { it.copy(guardando = false) }
             cargar()
-            if (fallo == null) onListo() else _state.update { it.copy(error = fallo) }
+            if (fallo == null) onListo() else _state.update { it.copy(errorGuardado = fallo) }
         }
     }
 
     fun limpiarError() {
-        _state.update { it.copy(error = null) }
+        _state.update { it.copy(error = null, errorGuardado = null) }
     }
 }

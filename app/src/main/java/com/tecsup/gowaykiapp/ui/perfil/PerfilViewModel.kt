@@ -16,7 +16,9 @@ data class PerfilUiState(
     val telefono: String = "",
     val descripcion: String = "Camino por Cusco y mapeo rutas para una ciudad más accesible.",
     val temaOscuro: Boolean? = null, // null = seguir el tema del sistema
-    val notificaciones: Boolean = true
+    val notificaciones: Boolean = true,
+    val miembroDesde: String? = null, // "yyyy-MM", se guarda la primera vez que se abre la app
+    val cargado: Boolean = false // true cuando DataStore ya entregó los datos guardados
 ) {
     val iniciales: String
         get() = nombre.trim().split(" ")
@@ -29,6 +31,10 @@ data class PerfilUiState(
 class PerfilViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repo = PerfilRepository(application)
+
+    init {
+        viewModelScope.launch { repo.asegurarFechaRegistro() }
+    }
 
     // El estado viene de DataStore, así que sobrevive al cerrar la app
     val state: StateFlow<PerfilUiState> = repo.perfil.stateIn(

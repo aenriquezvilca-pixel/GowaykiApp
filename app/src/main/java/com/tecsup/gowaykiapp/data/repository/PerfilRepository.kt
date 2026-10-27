@@ -8,6 +8,9 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.tecsup.gowaykiapp.ui.perfil.PerfilUiState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 private val Context.perfilDataStore by preferencesDataStore(name = "perfil_prefs")
 
@@ -22,6 +25,7 @@ class PerfilRepository(private val context: Context) {
         val descripcion = stringPreferencesKey("descripcion")
         val tema = stringPreferencesKey("tema") // "claro" | "oscuro" | ausente = sistema
         val notificaciones = booleanPreferencesKey("notificaciones")
+        val miembroDesde = stringPreferencesKey("miembro_desde") // "yyyy-MM"
     }
 
     val perfil: Flow<PerfilUiState> = context.perfilDataStore.data.map { prefs ->
@@ -37,7 +41,9 @@ class PerfilRepository(private val context: Context) {
                 "claro" -> false
                 else -> null
             },
-            notificaciones = prefs[Claves.notificaciones] ?: base.notificaciones
+            notificaciones = prefs[Claves.notificaciones] ?: base.notificaciones,
+            miembroDesde = prefs[Claves.miembroDesde],
+            cargado = true
         )
     }
 
@@ -66,6 +72,19 @@ class PerfilRepository(private val context: Context) {
     }
 
     suspend fun reiniciar() {
-        context.perfilDataStore.edit { it.clear() }
+        context.perfilDataStore.edit {
+            it.clear()
+            it[Claves.miembroDesde] = mesActual()
+        }
     }
+
+    /** Guarda el mes en que se abrió la app por primera vez, si todavía no existe. */
+    suspend fun asegurarFechaRegistro() {
+        context.perfilDataStore.edit { prefs ->
+            if (prefs[Claves.miembroDesde] == null) prefs[Claves.miembroDesde] = mesActual()
+        }
+    }
+
+    private fun mesActual(): String =
+        SimpleDateFormat("yyyy-MM", Locale.US).format(Date())
 }

@@ -40,6 +40,19 @@ import com.tecsup.gowaykiapp.ui.rutas.formatoKm
 
 private const val META_RUTAS = 10
 
+private val MESES_LARGO = listOf(
+    "enero", "febrero", "marzo", "abril", "mayo", "junio",
+    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
+)
+
+/** "2026-10" -> " · Desde octubre de 2026" (vacío si todavía no hay fecha guardada). */
+private fun textoMiembroDesde(anioMes: String?): String {
+    val partes = anioMes?.split("-") ?: return ""
+    if (partes.size != 2) return ""
+    val mes = partes[1].toIntOrNull()?.let { MESES_LARGO.getOrNull(it - 1) } ?: return ""
+    return " · Desde $mes de ${partes[0]}"
+}
+
 @Composable
 fun PerfilScreen(
     state: RutasUiState,
@@ -72,7 +85,7 @@ fun PerfilScreen(
         }
         Text(perfil.nombre, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Text(
-            "Voluntario · ${perfil.ciudad} · Desde agosto de 2026",
+            "Voluntario · ${perfil.ciudad}" + textoMiembroDesde(perfil.miembroDesde),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
