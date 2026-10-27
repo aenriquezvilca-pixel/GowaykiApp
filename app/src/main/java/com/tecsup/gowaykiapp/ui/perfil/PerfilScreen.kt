@@ -43,6 +43,7 @@ private const val META_RUTAS = 10
 @Composable
 fun PerfilScreen(
     state: RutasUiState,
+    perfil: PerfilUiState,
     onEstadisticas: () -> Unit,
     onRutasEnviadas: () -> Unit,
     onEditarPerfil: () -> Unit,
@@ -67,11 +68,11 @@ fun PerfilScreen(
                 .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Text("MQ", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            Text(perfil.iniciales, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
         }
-        Text("Mateo Quispe", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Text(perfil.nombre, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Text(
-            "Voluntario · Cusco, Perú · Desde agosto de 2026",
+            "Voluntario · ${perfil.ciudad} · Desde agosto de 2026",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

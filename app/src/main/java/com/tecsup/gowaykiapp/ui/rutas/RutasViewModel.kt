@@ -82,6 +82,21 @@ class RutasViewModel(
         }
     }
 
+    /** Borra en la API todas las rutas (se usa al eliminar la cuenta). */
+    fun eliminarTodas(onListo: () -> Unit) {
+        viewModelScope.launch {
+            _state.update { it.copy(guardando = true, error = null) }
+            var fallo: String? = null
+            for (ruta in _state.value.todas) {
+                val id = ruta.id ?: continue
+                repo.eliminar(id).onFailure { e -> fallo = e.message }
+            }
+            _state.update { it.copy(guardando = false) }
+            cargar()
+            if (fallo == null) onListo() else _state.update { it.copy(error = fallo) }
+        }
+    }
+
     fun limpiarError() {
         _state.update { it.copy(error = null) }
     }
