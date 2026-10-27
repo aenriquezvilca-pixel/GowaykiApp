@@ -1,8 +1,6 @@
 package com.tecsup.gowaykiapp.ui.navigation
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
@@ -16,7 +14,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -27,6 +24,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.tecsup.gowaykiapp.ui.estadisticas.EstadisticasScreen
+import com.tecsup.gowaykiapp.ui.explorar.DetalleRutaScreen
+import com.tecsup.gowaykiapp.ui.explorar.ExplorarScreen
 import com.tecsup.gowaykiapp.ui.perfil.AjustesScreen
 import com.tecsup.gowaykiapp.ui.perfil.CerrarSesionScreen
 import com.tecsup.gowaykiapp.ui.perfil.EditarPerfilScreen
@@ -49,6 +48,8 @@ object Rutas {
     const val ELIMINAR_CUENTA = "eliminar_cuenta"
     const val SESION_CERRADA = "sesion_cerrada"
     const val FORM = "ruta_form/{id}"
+    const val DETALLE = "ruta_detalle/{id}"
+    fun detalle(id: Int) = "ruta_detalle/$id"
     fun form(id: Int?) = "ruta_form/${id ?: -1}"
 }
 
@@ -105,9 +106,21 @@ fun GowaykiNav(
             modifier = Modifier.padding(padding).statusBarsPadding()
         ) {
             composable(Rutas.EXPLORAR) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Explorar (próximamente)")
-                }
+                ExplorarScreen(
+                    state = state,
+                    onVerRuta = { id -> nav.navigate(Rutas.detalle(id)) },
+                    onReintentar = vm::cargar
+                )
+            }
+            composable(
+                route = Rutas.DETALLE,
+                arguments = listOf(navArgument("id") { type = NavType.IntType })
+            ) { backStackEntry ->
+                val id = backStackEntry.arguments?.getInt("id") ?: -1
+                DetalleRutaScreen(
+                    ruta = state.todas.find { it.id == id },
+                    onBack = { nav.popBackStack() }
+                )
             }
             composable(Rutas.PERFIL) {
                 PerfilScreen(

@@ -1,10 +1,13 @@
 package com.tecsup.gowaykiapp.ui.perfil
 
-import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.tecsup.gowaykiapp.data.repository.PerfilRepository
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 data class PerfilUiState(
     val nombre: String = "Mateo Quispe",
@@ -23,33 +26,31 @@ data class PerfilUiState(
             .ifEmpty { "?" }
 }
 
-class PerfilViewModel : ViewModel() {
+class PerfilViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val _state = MutableStateFlow(PerfilUiState())
-    val state: StateFlow<PerfilUiState> = _state.asStateFlow()
+    private val repo = PerfilRepository(application)
+
+    // El estado viene de DataStore, así que sobrevive al cerrar la app
+    val state: StateFlow<PerfilUiState> = repo.perfil.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = PerfilUiState()
+    )
 
     fun guardarDatos(nombre: String, correo: String, ciudad: String, telefono: String, descripcion: String) {
-        _state.update {
-            it.copy(
-                nombre = nombre,
-                correo = correo,
-                ciudad = ciudad,
-                telefono = telefono,
-                descripcion = descripcion
-            )
-        }
+        viewModelScope.launch { repo.guardarDatos(nombre, correo, ciudad, telefono, descripcion) }
     }
 
     fun cambiarTema(oscuro: Boolean) {
-        _state.update { it.copy(temaOscuro = oscuro) }
+        viewModelScope.launch { repo.guardarTema(oscuro) }
     }
 
     fun cambiarNotificaciones(activadas: Boolean) {
-        _state.update { it.copy(notificaciones = activadas) }
+        viewModelScope.launch { repo.guardarNotificaciones(activadas) }
     }
 
     /** Vuelve a los datos de ejemplo (se usa al eliminar la cuenta). */
     fun reiniciar() {
-        _state.value = PerfilUiState()
+        viewModelScope.launch { repo.reiniciar() }
     }
 }
